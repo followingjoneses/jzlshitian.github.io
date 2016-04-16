@@ -5,9 +5,118 @@
     <description>A lazy blogger</description>
     <link>http://jzlshitian.github.io//</link>
     <atom:link href="http://jzlshitian.github.io//feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Sun, 10 Apr 2016 22:41:27 +0800</pubDate>
-    <lastBuildDate>Sun, 10 Apr 2016 22:41:27 +0800</lastBuildDate>
+    <pubDate>Sat, 16 Apr 2016 22:50:41 +0800</pubDate>
+    <lastBuildDate>Sat, 16 Apr 2016 22:50:41 +0800</lastBuildDate>
     <generator>Jekyll v3.0.2</generator>
+    
+      <item>
+        <title>浅谈c++析构函数</title>
+        <description>&lt;h3 id=&quot;section&quot;&gt;概述&lt;/h3&gt;
+
+&lt;p&gt;最近刚开始在OOP课程上学C++，C++作为一门面向对象的命令式编程语言，相比于C，多了类的概念。既然有类，就有构造函数，然而，与JAVA的不同之处在于，C++中还有析构函数。&lt;/p&gt;
+
+&lt;p&gt;众所周知，在C中可以用new和delete运算符来分配和撤销内存。其实，C++中构造函数与析构函数的本质也不外乎new和delete。调用一个构造函数，其实就是创建一个指向一片内存空间的引用，同时初始化该空间。同样的，析构函数就是删除引用，撤销内存空间。特别的，当一个对象是通过new运算符初始化的，在析构函数中需要用delete运算符。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;#include &amp;lt;iostream&amp;gt;
+
+using namespace std;
+
+class A {
+public:
+    A() {
+        cout &amp;lt;&amp;lt; &quot;构造函数&quot; &amp;lt;&amp;lt; endl;
+    }
+    ~A() {
+        cout &amp;lt;&amp;lt; &quot;析构函数&quot; &amp;lt;&amp;lt; endl;
+    }
+};
+
+int main() {
+    {
+        A* a;
+        a = new(A);
+
+        delete a; //Without this expression, the deconstructor will not be invoked
+    }
+
+    return 0;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;section-1&quot;&gt;显示调用析构函数的陷阱&lt;/h3&gt;
+
+&lt;p&gt;显式的调用析构函数是一件非常危险的事情，因为无论是否显示调用过，系统仍然会在语义块结束前再次调用。换句话说，所谓的显式调用析构函数，实际上只是调用了一个成员函数，并没有真正意义上的让对象“析构”。
+在谷歌的时候，找到了这样几句话，个人觉得说的非常好：&lt;/p&gt;
+
+&lt;p&gt;1.显式调用的时候，析构函数相当于的一个普通的成员函数&lt;br /&gt;
+2.编译器隐式调用析构函数，如分配了对内存，显式调用析构的话引起重复释放堆内存的异常&lt;br /&gt;
+3.把一个对象看作占用了部分栈内存，占用了部分堆内存（如果申请了的话），这样便于理解这个问题&lt;br /&gt;
+4.系统隐式调用析构函数的时候，会加入释放栈内存的动作（而堆内存则由用户手工的释放）&lt;br /&gt;
+5.用户显式调用析构函数的时候，只是单纯执行析构函数内的语句，不会释放栈内存，摧毁对象&lt;/p&gt;
+
+&lt;h3 id=&quot;section-2&quot;&gt;多次调用析构函数&lt;/h3&gt;
+
+&lt;p&gt;在完成我的lab的时候，我需要在析构函数中加入一些自定义操作，由此发现了一些问题。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;#include &amp;lt;iostream&amp;gt;
+#include &amp;lt;vector&amp;gt;
+
+using namespace std;
+
+class A {
+public:
+    A() {
+        cout &amp;lt;&amp;lt; &quot;构造函数&quot; &amp;lt;&amp;lt; endl;
+    }
+    ~A() {
+        cout &amp;lt;&amp;lt; &quot;析构函数&quot; &amp;lt;&amp;lt; endl;
+    }
+};
+
+int main() {
+    A a;
+
+    {
+        vector&amp;lt;A&amp;gt; aa;
+        aa.push_back(a);
+    }
+
+    return 0;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;非常简单的一个例子，但其输出是&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;构造函数  
+析构函数  
+析构函数
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;可以看到析构函数多调用了一次，原因就是我们在把a放入到aa的操作中，放入的其实只是a的一个拷贝。在语义块结束之前，这个拷贝自然会被析构了。&lt;/p&gt;
+
+&lt;p&gt;由此可以看出，如果不希望析构函数被多次调用的话，请使用按引用传值的方法。&lt;/p&gt;
+
+&lt;h3 id=&quot;vector&quot;&gt;vector与析构函数&lt;/h3&gt;
+
+&lt;p&gt;在讲对象push到vector的过程中，即使是按引用传值，也依旧会出现多次调用析构函数的现象，在豆瓣上找到一篇很靠谱的解释。&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://site.douban.com/195171/widget/notes/11653302/note/249892337/&quot;&gt;传送门&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;个人的建议是如果要在析构函数中进行操作，并且不希望该操作被多次调用的话，请使用list。&lt;/p&gt;
+
+&lt;h3 id=&quot;section-3&quot;&gt;结语&lt;/h3&gt;
+
+&lt;p&gt;好了，以上便是本人对于析构函数的一些浅薄的理解，写篇博客，以免日后相忘，还有资料可供自己查询。&lt;/p&gt;
+</description>
+        <pubDate>Sat, 16 Apr 2016 00:00:00 +0800</pubDate>
+        <link>http://jzlshitian.github.io//2016/%E6%B5%85%E8%B0%88C++%E6%9E%90%E6%9E%84%E5%87%BD%E6%95%B0/</link>
+        <guid isPermaLink="true">http://jzlshitian.github.io//2016/%E6%B5%85%E8%B0%88C++%E6%9E%90%E6%9E%84%E5%87%BD%E6%95%B0/</guid>
+        
+        
+      </item>
     
       <item>
         <title>First blog</title>
