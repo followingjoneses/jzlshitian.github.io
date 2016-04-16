@@ -5,8 +5,8 @@
     <description>A lazy blogger</description>
     <link>http://jzlshitian.github.io//</link>
     <atom:link href="http://jzlshitian.github.io//feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Sat, 16 Apr 2016 22:50:41 +0800</pubDate>
-    <lastBuildDate>Sat, 16 Apr 2016 22:50:41 +0800</lastBuildDate>
+    <pubDate>Sat, 16 Apr 2016 22:59:01 +0800</pubDate>
+    <lastBuildDate>Sat, 16 Apr 2016 22:59:01 +0800</lastBuildDate>
     <generator>Jekyll v3.0.2</generator>
     
       <item>
@@ -101,7 +101,7 @@ int main() {
 
 &lt;h3 id=&quot;vector&quot;&gt;vector与析构函数&lt;/h3&gt;
 
-&lt;p&gt;在讲对象push到vector的过程中，即使是按引用传值，也依旧会出现多次调用析构函数的现象，在豆瓣上找到一篇很靠谱的解释。&lt;/p&gt;
+&lt;p&gt;在将对象push到vector的过程中，即使是按引用传值，也依旧会出现多次调用析构函数的现象，在豆瓣上找到一篇很靠谱的解释。&lt;/p&gt;
 
 &lt;p&gt;&lt;a href=&quot;https://site.douban.com/195171/widget/notes/11653302/note/249892337/&quot;&gt;传送门&lt;/a&gt;&lt;/p&gt;
 
